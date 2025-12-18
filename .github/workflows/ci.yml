@@ -11,8 +11,8 @@ jobs:
         id: noir
         uses: owasp-noir/noir@v0.25.1
         with:
-          base_path: '.'
-          format: json
+          base_path: 'src'
+          format: 'json'
           
   build:
     runs-on: ubuntu-latest
