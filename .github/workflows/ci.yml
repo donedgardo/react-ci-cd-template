@@ -12,7 +12,7 @@ jobs:
         uses: owasp-noir/noir@v0.25.1
         with:
           base_path: '.'
-          output: json
+          format: json
           
   build:
     runs-on: ubuntu-latest
