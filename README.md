@@ -1,4 +1,5 @@
 [![CI](https://github.com/donedgardo/react-ci-cd-template/actions/workflows/ci.yml/badge.svg)](https://github.com/donedgardo/react-ci-cd-template/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/donedgardo/react-ci-cd-template/graph/badge.svg?token=QIKNLNIUOG)](https://codecov.io/github/donedgardo/react-ci-cd-template)
 # React + TypeScript + Vite CI/CD
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
