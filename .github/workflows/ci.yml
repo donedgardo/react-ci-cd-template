@@ -13,6 +13,7 @@ jobs:
         with:
           base_path: 'src'
           format: 'json'
+          output_file: noir_results.json
           
   build:
     runs-on: ubuntu-latest
