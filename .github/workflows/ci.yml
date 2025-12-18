@@ -6,7 +6,10 @@ on:
 
 jobs:
   build:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
+     
     steps:
     - uses: actions/checkout@v4
     - name: Use Node.js 
@@ -20,7 +23,10 @@ jobs:
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v6.0.0
       with:
-        name: build
+        name: build.zip
         path: dist
         overwrite: true
-          
+    - name: Upload Artifact to Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: build.zip    
