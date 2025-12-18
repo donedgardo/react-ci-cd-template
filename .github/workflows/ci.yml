@@ -1,12 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches: [ "main" ]
-    tags:
-      - "v*.*.*"
-  create:
-    
+on: push
 
 jobs:
   build:
