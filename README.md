@@ -1,8 +1,7 @@
 # 🚀 React CI/CD Template
 
-[![CI/CD](https://github.com/donedgardo/react-ci-cd-template/workflows/CI/CD/badge.svg)](https://github.com/donedgardo/react-ci-cd-template/actions)
-[![License: MIT](https://img.shields.i
-o/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/donedgardo/react-ci-cd-template/actions/workflows/ci.yml/badge.svg)](https://github.com/donedgardo/react-ci-cd-template/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/github/donedgardo/react-ci-cd-template/graph/badge.svg?token=QIKNLNIUOG)](https://codecov.io/github/donedgardo/react-ci-cd-template)
 
 A modern, production-ready React template with best-in-class CI/CD practices, testing infrastructure, and developer tooling. Built to help teams ship faster with confidence.
 
