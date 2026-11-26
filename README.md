@@ -1,9 +1,12 @@
 # 🚀 React CI/CD Template
 
 [![CI](https://github.com/donedgardo/react-ci-cd-template/actions/workflows/ci.yml/badge.svg)](https://github.com/donedgardo/react-ci-cd-template/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/demo-live-brightgreen)](https://donedgardo.github.io/react-ci-cd-template/)
 [![codecov](https://codecov.io/github/donedgardo/react-ci-cd-template/graph/badge.svg?token=QIKNLNIUOG)](https://codecov.io/github/donedgardo/react-ci-cd-template)
 
 A modern, production-ready React template with best-in-class CI/CD practices, testing infrastructure, and developer tooling. Built to help teams ship faster with confidence.
+
+**Live demo:** https://donedgardo.github.io/react-ci-cd-template/ (deployed by the pipeline in this repo on every commit to `main`).
 
 ## ✨ Features
 
@@ -21,7 +24,7 @@ A modern, production-ready React template with best-in-class CI/CD practices, te
 ### 🔄 CI/CD Pipeline
 - 🤖 **GitHub Actions** - Automated testing and deployment
 - 📦 **Build Verification** - Automated build checks on every PR
-- 🚀 **Deployment Automation** *(Planned)* - Automated deployments to hosting platforms
+- 🚀 **Deployment Automation** - Every green commit on `main` is deployed to GitHub Pages and smoke tested
 
 ### 🎯 Developer Experience
 - 🔥 **Hot Module Replacement** - Instant feedback during development
@@ -81,24 +84,19 @@ react-ci-cd-template/
 
 ## 🔄 CI/CD Workflow
 
-This template includes a comprehensive CI/CD pipeline that runs on every push and pull request:
+This template includes a CI/CD pipeline that runs on every push. Commits on `main` that pass it are deployed.
 
 ### Continuous Integration (CI)
 
 ```mermaid
 graph LR
-    A[Push/PR] --> B[Checkout Code]
-    B --> C[Install Dependencies]
-    C --> D[Type Check]
-    C --> E[Lint]
-    C --> F[Run Tests]
-    C --> G[Build]
-    D --> H{All Pass?}
-    E --> H
-    F --> H
-    G --> H
-    H -->|Yes| I[Deploy]
-    H -->|No| J[Fail Build]
+    A[Push] --> B[Security scan]
+    A --> C[Install, test, build]
+    B --> D{All pass and on main?}
+    C --> D
+    D -->|Yes| E[Deploy to GitHub Pages]
+    E --> F[Smoke test live site]
+    D -->|No| G[Stop]
 ```
 
 **What it does:**
@@ -107,16 +105,24 @@ graph LR
 - ✅ Generates code coverage reports
 - ✅ Builds production bundle
 
-### Continuous Deployment (CD) *(Planned)*
+### Continuous Deployment (CD)
 
-**Deployment Options:**
+Every commit on `main` that passes the security scan, the tests and the build is deployed to **GitHub Pages** by the `deploy` job in `.github/workflows/ci.yml`. No manual step, no separate release branch.
 
-1. **GitHub Pages** - Free hosting for static sites
-2. **Vercel** - Zero-config deployments with preview URLs
-3. **Netlify** - Continuous deployment with form handling
-4. **AWS S3 + CloudFront** - Scalable cloud hosting
-5. **Azure Static Web Apps** - Enterprise-grade hosting
-6. **Cloudflare Pages** - Fast global CDN
+- **Build once, deploy what was tested.** The `build` job uploads the bundle it just tested; the `deploy` job publishes that exact bundle instead of building again.
+- **Smoke test after deploy.** The job fetches the live URL and fails if the app shell is not being served, so a broken deployment shows up as a red pipeline.
+- **One deployment at a time.** Deployments queue instead of overlapping or cancelling each other halfway.
+
+**Using this template in your own repository:**
+
+1. Go to **Settings > Pages** and set **Source** to **GitHub Actions**. Until you do, the `deploy` job fails.
+2. Push to `main`. Your site is published at `https://<user>.github.io/<repository>/`.
+
+The build sets Vite's `base` to the repository name automatically, so no configuration changes are needed. If you deploy to a custom domain or a `<user>.github.io` repository, remove the `--base` argument in the workflow.
+
+**Rolling back:** revert the commit on `main`; the pipeline deploys the previous version the same way it deployed the bad one.
+
+Other hosts work with the same build output (`dist/`): Vercel, Netlify, Cloudflare Pages, AWS S3 + CloudFront or Azure Static Web Apps.
 
 ## 🌳 Trunk-Based Development
 
