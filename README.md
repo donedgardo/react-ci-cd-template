@@ -56,7 +56,6 @@ Visit `http://localhost:5173` to see your app running.
 | `npm run build` | Build production bundle |
 | `npm run preview` | Preview production build locally |
 | `npm run test` | Run unit tests |
-| `npm run test:ui` | Run tests with UI interface |
 | `npm run test:coverage` | Generate coverage report |
 
 ## 🔧 Project Structure
@@ -67,12 +66,9 @@ react-ci-cd-template/
 │   └── workflows/
 │       └── ci.yml              # Main CI/CD pipeline
 ├── src/
-│   ├── components/             # React components
-│   ├── hooks/                  # Custom hooks
-│   ├── utils/                  # Utility functions
+│   ├── tests/                  # Tests (*.spec.tsx) and test setup
 │   ├── App.tsx                 # Main app component
 │   └── main.tsx               # Entry point
-├── tests/                      # All tests (unit, integration, e2e)
 ├── public/                     # Static assets
 ├── vitest.config.ts           # Vitest configuration
 ├── vite.config.ts             # Vite configuration
@@ -190,13 +186,10 @@ git push origin quick-fix-button
 ```bash
 npm run test
 ```
-Test individual components and functions in isolation.
+Test individual components and functions in isolation. Tests live in `src/tests` as `*.spec.tsx` files and are configured in `vitest.config.ts`.
 
 ### Integration Tests
-```bash
-npm run test:integration
-```
-Test how components work together.
+Tests of how components work together live in the same `src/tests` folder and run with the same command.
 
 ### E2E Tests *(Planned with Playwright)*
 ```bash
