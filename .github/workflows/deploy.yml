@@ -1,0 +1,98 @@
+name: GitLaunch deploy
+
+# Dispatched by GitLaunch (https://gitlaunch.dev) when a build is deployed
+# from its dashboard. The two workflow_dispatch inputs are the contract with
+# GitLaunch: do not rename them or add others.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
+      buildId:
+        description: "Build ID (commit SHA)"
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      buildId:
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: "${{ inputs.environment }}"
+      BUILD_ID: "${{ inputs.buildId || github.sha }}"
+      DEPLOY_URL: "https://gitlaunch.dev/api/v1/services/${{ vars.GITLAUNCH_SERVICE_ID }}/builds/${{ inputs.buildId || github.sha }}/deploy/${{ inputs.environment }}"
+    steps:
+      # Deploy the commit that was built, not whatever main points at now.
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ env.BUILD_ID }}"
+
+      - name: Report deploying
+        run: |
+          curl --fail-with-body -sS -X PATCH "$DEPLOY_URL" \
+            -H "Authorization: Bearer ${{ secrets.GITLAUNCH_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"status":"deploying"}'
+
+      # ---------------------------------------------------------------
+      # TODO: this environment has no host yet. GitHub Pages is taken by
+      # the production pipeline in ci.yml, so for now the "deploy" builds
+      # the selected commit and keeps the bundle as a workflow artifact.
+      # Replace the upload with a real publish step once a host is chosen.
+      # Everything above and below is GitLaunch reporting and should be
+      # left in place.
+      # ---------------------------------------------------------------
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Deploy
+        run: echo "Deploying $BUILD_ID to $ENVIRONMENT (bundle kept as an artifact, no host configured yet)"
+
+      - name: Keep the deployed bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: "site-${{ env.ENVIRONMENT }}-${{ env.BUILD_ID }}"
+          path: dist
+
+      - name: Report deployed
+        if: success()
+        run: |
+          curl --fail-with-body -sS -X PATCH "$DEPLOY_URL" \
+            -H "Authorization: Bearer ${{ secrets.GITLAUNCH_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"status":"deployed"}'
+
+      - name: Report failed
+        if: failure()
+        run: |
+          curl --fail-with-body -sS -X PATCH "$DEPLOY_URL" \
+            -H "Authorization: Bearer ${{ secrets.GITLAUNCH_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"status":"error"}'
+
+      - name: Report cancelled
+        if: cancelled()
+        run: |
+          curl --fail-with-body -sS -X PATCH "$DEPLOY_URL" \
+            -H "Authorization: Bearer ${{ secrets.GITLAUNCH_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"status":"cancelled"}'

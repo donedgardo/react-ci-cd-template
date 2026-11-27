@@ -1,0 +1,41 @@
+name: GitLaunch build
+
+# Experimental pipeline for trying out GitLaunch (https://gitlaunch.dev).
+# It is independent of ci.yml, which keeps deploying main to GitHub Pages.
+# Every green build of main is reported to GitLaunch, where it can then be
+# deployed to an environment from the dashboard (see deploy.yml).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npm run test:coverage
+
+      - run: npm run build
+
+      - name: Report build to GitLaunch
+        if: github.ref == 'refs/heads/main'
+        env:
+          GITLAUNCH_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          GITLAUNCH_COMMIT_AT: ${{ github.event.head_commit.timestamp }}
+        run: |
+          COMMIT_AT="${GITLAUNCH_COMMIT_AT:-$(git show -s --format=%cI ${{ github.sha }})}"
+          curl --fail-with-body -sS -X POST \
+            "https://gitlaunch.dev/api/v1/services/${{ vars.GITLAUNCH_SERVICE_ID }}/builds" \
+            -H "Authorization: Bearer ${{ secrets.GITLAUNCH_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -nc --arg buildId "${{ github.sha }}" --arg message "$GITLAUNCH_COMMIT_MESSAGE" --arg commitAt "$COMMIT_AT" '{buildId:$buildId,message:$message,commitAt:$commitAt}')"
